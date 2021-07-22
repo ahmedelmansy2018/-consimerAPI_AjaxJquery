@@ -1,0 +1,337 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Home</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1> Home Page</h1>
+        <form id="form">
+            <input type="text" name="UserName" id="UserName">
+            <input type="password" name="password" id="password">
+            <button type="button" id="login">Log In</button>
+        </form>
+        <br />
+        <button type="button" id="logout">Log Out</button>
+        <!--<button type="button" id="showData">Show Data</button>-->
+        <br />
+        <input type="text" name="Name" id="Name">
+        
+        <button type="button" id="Insert">Insert</button>
+
+        <div id="response"></div>
+        <br />
+
+        <table class="table " id="tb1">
+            <tr>
+
+                <th> Country Name </th>
+            </tr>
+        </table>
+
+        <div id="myModal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Modal Header</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <label>countryId</label>
+                            <input type="text" name="countryId" id="countryId">
+                            <label>CountryName </label>
+                            <input type="text" name="CountryeName" id="CountryeName">
+
+
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" id="EditCountry" class="btn btn-primary" data-dismiss="modal">Edit</button>
+
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div id="ConfirmmyModal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Modal Header</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            You Are Sure To Delete,,?
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" id="DeleteCountry" class="btn btn-danger" data-dismiss="modal">Delete</button>
+
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    <script>
+        var countryId;
+        function getCountrybyId(id) {
+            countryId = id;
+            $.ajax({
+                url: "http://localhost:56189/api/Countriees/" + countryId,
+                type: "GET",
+                beforeSend: function (request) {
+                    request.setRequestHeader("Authorization",
+                        "Bearer " + localStorage.getItem("token"));
+                },
+                
+                dataType: "json",
+                success: function (data) {
+                    $("#countryId").val(data.countryId);
+                    $("#CountryeName").val(data.name);
+
+                },
+                error: function () {
+                    alert("Try Fix Error ");
+                    }
+            });
+        }
+         
+        $(document).ready(function () {
+            
+            $("#login").click(function () {
+                var UserName = $('#UserName').val();
+                var password = $('#password').val();
+                var options = {};
+                options.url = "http://localhost:56189/api/Auth/login";
+                options.type = "POST";
+
+                var obj = {};
+
+                obj.userName = UserName;
+                obj.password = password;
+
+                options.data = JSON.stringify(obj);
+                options.contentType = "application/json";
+                options.dataType = "json";
+
+                options.success = function (obj) {
+                    showData();
+                    localStorage.setItem("token", obj.token);
+                    $("#response").html("<h2>User successfully logged in</h2 > ");
+                };
+                options.error = function () {
+                    $("#response").html("<h2>Error while calling the Web API</h2 > ");
+                };
+                $.ajax(options);
+            });
+            function showData() {
+                //  $("#showData").click(function () {
+                var options = {};
+                options.url = "http://localhost:56189/api/Countriees";
+                options.type = "GET";
+                options.beforeSend = function (request) {
+                    request.setRequestHeader("Authorization",
+                        "Bearer " + localStorage.getItem("token"));
+                };
+                options.dataType = "json";
+                options.success = function (data) {
+                    console.log(data);
+                    data.forEach(function (element) {
+                        $("#tb1").append("<tr>" +
+                            "<td>" + element.name + "</td>" +
+                            "<td> <button id=" + element.countryId + " onClick='getCountrybyId(id)' class='btn btn - info btn - lg' data-toggle='modal' data-target='#myModal'>Edit</button></td>" +
+                            "<td> <button id=" + element.countryId + "  onClick='getCountrybyId(id)' class='btn btn - danger ' data-toggle='modal' data-target='#ConfirmmyModal' >Delete</button></td>" +
+                            "</tr>");
+                    });
+                };
+                options.error = function () {
+                    $("#response").html("<h2>Error while calling the Web API!</h2> ");
+                };
+                $.ajax(options);
+                //});
+            };
+            
+            showData();
+
+
+            $("#login").click(function () {
+                var UserName = $('#UserName').val();
+                var password = $('#password').val();
+                var options = {};
+                options.url = "http://localhost:56189/api/Auth/login";
+                options.type = "POST";
+
+                var obj = {};
+
+                obj.userName = UserName;
+                obj.password = password;
+
+                options.data = JSON.stringify(obj);
+                options.contentType = "application/json";
+                options.dataType = "json";
+
+                options.success = function (obj) {
+                    localStorage.setItem("token", obj.token);
+                    
+                    $("#response").html("<h2>User successfully logged in.</h2 > ");
+                };
+                options.error = function () {
+                    $("#response").html("<h2>Error while calling the Web API!</h2 > ");
+                };
+                $.ajax(options);
+            });
+
+
+
+
+            $("#logout").click(function () {
+                localStorage.removeItem("token");
+                $("#response").html("<h2>User successfully logged out.</h2 > ");
+            });
+            $("#Insert").click(function () {
+                var Name = $('#Name').val();
+            
+                var options = {};
+                options.url = "http://localhost:56189/api/Countriees";
+                options.type = "POST";
+
+                var obj = {};
+
+                obj.Name = Name;
+                options.beforeSend = function (request) {
+                    request.setRequestHeader("Authorization",
+                        "Bearer " + localStorage.getItem("token"));
+                };
+
+                options.data = JSON.stringify(obj);
+                options.contentType = "application/json";
+                options.dataType = "json";
+
+                options.success = function () {
+                    alert("sucssed");
+                    $("#tb1").empty();
+                    showData();
+                };
+                options.error = function () {
+                    $("#response").html("<h2>Error while calling the Web API!</h2 > ");
+                };
+                $.ajax(options);
+            });
+
+            //$("#Insert").click(function () {
+            //    var name = $("#Name").val();
+            //    $.ajax({
+            //        url: "http://localhost:56189/api/Countriees/" ,
+            //        type: "POST",
+            
+
+            //        dataType: "json",
+            //        contentType: "application/json",
+
+            //        data: {
+                       
+            //            name: name,
+
+            //        },
+            //        beforeSend: function (request) {
+            //            request.setRequestHeader("Authorization",
+            //                "Bearer " + localStorage.getItem("token"));
+            //        },
+
+            //        success: function () {
+            //            alert("sucssed");
+            //            $("#tb1").empty();
+            //            showData();
+            //        },
+            //        error: function () {
+            //            alert("Try Fix Error ");
+            //        }
+            //    });
+
+            //});
+
+            $("#EditCountry").click(function () {
+                var countryId = $("#countryId").val();
+
+                var name = $("#CountryeName").val();
+
+                var options = {};
+                options.url = "http://localhost:56189/api/Countriees/" + countryId;
+                options.type = "PUT";
+
+                var obj = {};
+             
+                    
+                    obj.name = name;
+                obj.countryId = countryId;
+                options.beforeSend = function (request) {
+                    request.setRequestHeader("Authorization",
+                        "Bearer " + localStorage.getItem("token"));
+                };
+
+                options.data = JSON.stringify(obj);
+                options.contentType = "application/json";
+                options.dataType = "json";
+
+                options.success = function () {
+                    alert("sucssed");
+                    $("#tb1").empty();
+                    showData();
+                };
+                options.error = function () {
+                    $("#response").html("<h2>Error while calling the Web API!</h2 > ");
+                };
+                $.ajax(options);
+            });
+
+          
+            $("#DeleteCountry").click(function () {
+          
+                $.ajax({
+                    url: "http://localhost:56189/api/Countriees/" + countryId,
+                    type: "DELETE",
+                    beforeSend: function (request) {
+                        request.setRequestHeader("Authorization",
+                            "Bearer " + localStorage.getItem("token"));
+                    },
+
+
+                    //dataType: "json",
+                    //contentType: "application/json",
+                    success: function () {
+                        alert("sucssed");
+                        $("#tb1").empty();
+                         showData();
+                    },
+                    error: function () {
+                      
+                       
+                        $("#response").html("<h2>Error while calling the Web API!</h2 > ");
+                        alert("Try Fix Error ");
+                    }
+                });
+
+            });
+
+            
+        });
+    </script>
+</body>
+
+</html>
